@@ -3,16 +3,18 @@ const canvas = document.getElementById('canvas'),
   gridSize = 600,
   tileSize = 50,
   gridColor = 'darkgrey',
+  gridBgColor = 'lightgray',
   highlightColor = 'yellow',
   markColor = 'blue',
-  drawDelay = 500;
+  paintColor = 'black',
+  drawDelay = 200;
 
 canvas.width = gridSize;
 canvas.height = gridSize;
 ctx.lineWidth = 2; // workaround for pixel color blending issue
 
 const grid = [];
-let activeTile, currentTile;
+let activeTile, currentTile, activeTool = 'draw', isDrawing = false;
 
 function initializeGrid() {
   for (let y = 0; y < gridSize; y += tileSize) {
@@ -89,6 +91,11 @@ function markTile(t) {
   colorTile(t, markColor);
 }
 
+function paintTile(t) {
+  ctx.fillStyle = paintColor;
+  ctx.fillRect(t.x, t.y, tileSize, tileSize);
+}
+
 function colorTile(t, color) {
   ctx.strokeStyle = color;
   ctx.beginPath();
@@ -125,7 +132,13 @@ function getAdjacentTiles(t) {
   return adj;
 }
 
+function setActiveTool(tool) {
+  activeTool = tool;
+}
+
 function reset() {
+  ctx.fillStyle = gridBgColor;
+  ctx.fillRect(0, 0, gridSize, gridSize);
   drawGrid();
 
   for (const row of grid)
@@ -138,11 +151,24 @@ canvas.addEventListener('mousemove', e => {
   currentTile = getTile(e.offsetX, e.offsetY);
 
   // if the current tile is not the active tile, then update the active tile to be the current one
-  if (!isActiveTile(currentTile))
+  if (!isActiveTile(currentTile)) {
     setActiveTile(currentTile);
+    if (isDrawing) paintTile(currentTile); // paint the tile if drawing
+  }
 });
 
-canvas.addEventListener('mousedown', () => fill(currentTile));
+canvas.addEventListener('mousedown', () => {
+  if (activeTool === 'draw') {
+    isDrawing = true;
+    paintTile(activeTile);
+  }
+  else if (activeTool === 'fill')
+    fill(currentTile)
+});
+
+canvas.addEventListener('mouseup', () => {
+  if (isDrawing) isDrawing = false;
+});
 
 initializeGrid();
 drawGrid();
