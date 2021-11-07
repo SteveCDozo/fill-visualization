@@ -42,6 +42,9 @@ function drawGrid() {
   }
 
   ctx.stroke();
+
+  // draw borders
+  ctx.strokeRect(0, 0, gridSize, gridSize);
 }
 
 function getTile(x, y) {
@@ -120,6 +123,14 @@ function getAdjacentTiles(t) {
     adj.push( getTile(t.x - tileSize, t.y) );
   
   return adj;
+}
+
+function reset() {
+  drawGrid();
+
+  for (const row of grid)
+    for (const tile of row)
+      tile.visited = false;
 }
 
 canvas.addEventListener('mousemove', e => {

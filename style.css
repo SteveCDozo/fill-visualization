@@ -6,3 +6,7 @@ body {
 canvas {
   background-color: lightgray;
 }
+
+#controls {
+  margin-top: 40px;
+}
