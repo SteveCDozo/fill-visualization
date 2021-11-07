@@ -3,13 +3,27 @@ const canvas = document.getElementById('canvas'),
   gridSize = 600,
   tileSize = 50,
   gridColor = 'darkgrey',
-  highlightColor = 'yellow';
+  highlightColor = 'yellow',
+  markColor = 'blue',
+  drawDelay = 500;
 
 canvas.width = gridSize;
 canvas.height = gridSize;
 ctx.lineWidth = 2; // workaround for pixel color blending issue
 
-let activeTile = { x: -1, y: -1 };
+const grid = [];
+let activeTile, currentTile;
+
+function initializeGrid() {
+  for (let y = 0; y < gridSize; y += tileSize) {
+    let row = [];
+
+    for (let x = 0; x < gridSize; x += tileSize)      
+      row.push({x, y, visited: false});
+    
+    grid.push(row);
+  }
+}
 
 function drawGrid() {
   ctx.strokeStyle = gridColor;
@@ -31,42 +45,93 @@ function drawGrid() {
 }
 
 function getTile(x, y) {
-  // round down to nearest multiple of tileSize
-  x -= x % tileSize;
-  y -= y % tileSize;
-  return { x: x, y: y};
+  // there's a possibility the x or y offset coordinate may 
+  // be off the grid, so just adjust it accordingly
+  if (x < 0)
+    x = 0;
+  else if (x >= gridSize)
+    x = gridSize-1;
+  if (y < 0)
+    y = 0;
+  else if (y >= gridSize)
+    y = gridSize-1;
+
+  x = Math.floor(x/tileSize);
+  y = Math.floor(y/tileSize);
+
+  return grid[y][x];
 }
 
 function isActiveTile(t) {
-  return t.x == activeTile.x && t.y == activeTile.y;
+  if (t == undefined) console.log('undefined');
+  return activeTile && t.x == activeTile.x && t.y == activeTile.y;
 }
 
 // updates the active tile & highlights it, removes highlight from previously active tile
 function setActiveTile(t) {
-  unhighlightTile(activeTile);
+  if (activeTile) unhighlightTile(activeTile);
   highlightTile(t);    
   activeTile = t;
 }
 
 function highlightTile(t) {
-  ctx.strokeStyle = highlightColor;
+  colorTile(t, highlightColor);
+}
+
+function unhighlightTile(t) {
+  colorTile(t, gridColor);
+}
+
+function markTile(t) {
+  colorTile(t, markColor);
+}
+
+function colorTile(t, color) {
+  ctx.strokeStyle = color;
   ctx.beginPath();
   ctx.strokeRect(t.x, t.y, tileSize, tileSize);
 }
 
-function unhighlightTile(t) {
-  ctx.strokeStyle = gridColor;
-  ctx.beginPath();
-  ctx.strokeRect(t.x, t.y, tileSize, tileSize);
+function fill(t) {
+  if (t.visited) return;
+
+  // color tile and mark it as visited
+  markTile(t)
+  t.visited = true;
+
+  // repeat for adjacent tiles
+  const adjTiles = getAdjacentTiles(t);
+  for (const tile of adjTiles)
+    setTimeout(() => fill(tile), drawDelay);
+}
+
+// returns the tiles directly north, south, east, & west that are within the grid
+function getAdjacentTiles(t) {
+  const lowerBound = 0, upperBound = gridSize - tileSize;
+  let adj = [];
+
+  if (t.y > lowerBound) // north tile
+    adj.push( getTile(t.x, t.y - tileSize) );
+  if (t.y < upperBound)  // south tile
+    adj.push( getTile(t.x, t.y + tileSize) );
+  if (t.x < upperBound) // east tile
+    adj.push( getTile(t.x + tileSize, t.y) );
+  if (t.x > lowerBound) // west tile
+    adj.push( getTile(t.x - tileSize, t.y) );
+  
+  return adj;
 }
 
 canvas.addEventListener('mousemove', e => {
   // event.offsetX & event.offsetY give the (x,y) offset from the edge of the canvas
-  const currentTile = getTile(e.offsetX, e.offsetY);
+  currentTile = getTile(e.offsetX, e.offsetY);
 
   // if the current tile is not the active tile, then update the active tile to be the current one
   if (!isActiveTile(currentTile))
     setActiveTile(currentTile);
 });
 
+canvas.addEventListener('mousedown', () => fill(currentTile));
+
+initializeGrid();
 drawGrid();
