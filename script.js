@@ -7,7 +7,9 @@ const canvas = document.getElementById('canvas'),
   highlightColor = 'yellow',
   markColor = 'blue',
   paintColor = 'black',
-  drawDelay = 200;
+  drawDelay = 200,
+  drawCursor = 'url(cursors/paint.svg) 0 24, auto',
+  fillCursor = 'url(cursors/color-fill.svg) 0 24, auto';
 
 canvas.width = gridSize;
 canvas.height = gridSize;
@@ -134,6 +136,14 @@ function getAdjacentTiles(t) {
 
 function setActiveTool(tool) {
   activeTool = tool;
+  updateCursor();  
+}
+
+function updateCursor() {
+  if (activeTool === 'draw')
+    canvas.style.cursor = drawCursor;
+  else if (activeTool === 'fill')
+    canvas.style.cursor = fillCursor;
 }
 
 function reset() {
@@ -172,3 +182,4 @@ canvas.addEventListener('mouseup', () => {
 
 initializeGrid();
 drawGrid();
+updateCursor();
