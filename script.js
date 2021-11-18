@@ -23,7 +23,7 @@ function initializeGrid() {
     let row = [];
 
     for (let x = 0; x < gridSize; x += tileSize)      
-      row.push({x, y, visited: false});
+      row.push({x, y, visited: false, painted: false});
     
     grid.push(row);
   }
@@ -90,12 +90,15 @@ function unhighlightTile(t) {
 }
 
 function markTile(t) {
-  colorTile(t, markColor);
+  paintTile(t, markColor);
 }
 
-function paintTile(t) {
-  ctx.fillStyle = paintColor;
+function paintTile(t, color) {
+  if (t.painted) return; // check if it's already been painted
+  
+  ctx.fillStyle = color ? color : paintColor;
   ctx.fillRect(t.x, t.y, tileSize, tileSize);
+  t.painted = true;
 }
 
 function colorTile(t, color) {
@@ -105,7 +108,7 @@ function colorTile(t, color) {
 }
 
 function fill(t) {
-  if (t.visited) return;
+  if (t.visited || t.painted) return;
 
   // color tile and mark it as visited
   markTile(t)
@@ -152,8 +155,10 @@ function reset() {
   drawGrid();
 
   for (const row of grid)
-    for (const tile of row)
+    for (const tile of row) {
       tile.visited = false;
+      tile.painted = false;
+    }
 }
 
 canvas.addEventListener('mousemove', e => {
