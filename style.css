@@ -10,3 +10,12 @@ canvas {
 #controls {
   margin-top: 40px;
 }
+
+#controls > div {
+  margin-bottom: 20px;
+}
+
+#speed {
+  display: inline-block;
+  width: 2em;
+}

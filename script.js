@@ -1,4 +1,7 @@
 const canvas = document.getElementById('canvas'),
+  speedDisplay = document.getElementById('speed'),
+  decSpeedBtn = document.getElementById('decreaseSpeed'),
+  incSpeedBtn = document.getElementById('increaseSpeed'),
   ctx = canvas.getContext('2d'),
   gridSize = 600,
   tileSize = 50,
@@ -7,16 +10,20 @@ const canvas = document.getElementById('canvas'),
   highlightColor = 'yellow',
   markColor = 'lightblue',
   paintColor = 'black',
-  drawDelay = 1000,
   drawCursor = 'url(cursors/paint.svg) 0 24, auto',
-  fillCursor = 'url(cursors/color-fill.svg) 0 24, auto';
+  fillCursor = 'url(cursors/color-fill.svg) 0 24, auto',
+  speedIncrement = 0.25,
+  minSpeed = speedIncrement,
+  maxSpeed = 2,
+  initialDrawDelay = 500,
+  drawDelayIncrement = initialDrawDelay * speedIncrement;
 
 canvas.width = gridSize;
 canvas.height = gridSize;
 ctx.lineWidth = 2; // workaround for pixel color blending issue
 
 const grid = [];
-let activeTile, currentTile, activeTool = 'draw', isDrawing = false;
+let activeTile, currentTile, activeTool = 'draw', isDrawing = false, drawDelay = initialDrawDelay, speed = 1;
 
 function initializeGrid() {
   for (let y = 0; y < gridSize; y += tileSize) {
@@ -174,6 +181,47 @@ function reset() {
       tile.visited = false;
       tile.painted = false;
     }
+}
+
+// increases anim speed if increase is true, otherwise decreases speed
+function changeSpeed(increase) {
+
+  if ((increase && speed == maxSpeed) ||
+     (!increase && speed == minSpeed))
+    return;
+
+  speed += increase ? speedIncrement : -speedIncrement;
+
+  drawDelay = Math.floor(initialDrawDelay / speed);
+  speedDisplay.innerText = speed;
+
+  updateSpeedControls();
+}
+
+// determines which speed controls should be enabled/disabled
+function updateSpeedControls() {
+  switch (speed) {
+    case minSpeed:
+      enableSpeedControls(false, true);
+      break;
+    case maxSpeed:
+      enableSpeedControls(true, false);
+      break;
+    default:
+      enableSpeedControls(true, true);
+  }
+}
+
+// enables/disables the speed controls as specified
+function enableSpeedControls(decEnabled, incEnabled) {
+
+  if ((decEnabled && decSpeedBtn.disabled) ||
+      (!decEnabled && !decSpeedBtn.disabled))
+    decSpeedBtn.disabled = !decSpeedBtn.disabled;
+  
+  if ((incEnabled && incSpeedBtn.disabled) ||
+      (!incEnabled && !incSpeedBtn.disabled))
+    incSpeedBtn.disabled = !incSpeedBtn.disabled;
 }
 
 canvas.addEventListener('mousemove', e => {

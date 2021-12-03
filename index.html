@@ -12,9 +12,17 @@
     <canvas id="canvas"></canvas>
 
     <div id="controls">
-      <button id="draw" onclick="setActiveTool('draw')">Draw</button>
-      <button id="fill" onclick="setActiveTool('fill')">Fill</button>
-      <button id="reset" onclick="reset()">Reset</button>
+      <div>
+        <button id="draw" onclick="setActiveTool('draw')">Draw</button>
+        <button id="fill" onclick="setActiveTool('fill')">Fill</button>
+        <button id="reset" onclick="reset()">Reset</button>
+      </div>
+      <div>
+        Speed:
+        <button id="decreaseSpeed" onclick="changeSpeed(false)">-</button>
+        <span id="speed">1</span>x
+        <button id="increaseSpeed" onclick="changeSpeed(true)">+</button>
+      </div>
     </div>
 
     <script src="script.js"></script>
