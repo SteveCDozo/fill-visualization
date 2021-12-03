@@ -5,9 +5,9 @@ const canvas = document.getElementById('canvas'),
   gridColor = 'darkgrey',
   gridBgColor = 'lightgray',
   highlightColor = 'yellow',
-  markColor = 'blue',
+  markColor = 'lightblue',
   paintColor = 'black',
-  drawDelay = 200,
+  drawDelay = 1000,
   drawCursor = 'url(cursors/paint.svg) 0 24, auto',
   fillCursor = 'url(cursors/color-fill.svg) 0 24, auto';
 
@@ -108,16 +108,31 @@ function colorTile(t, color) {
 }
 
 function fill(t) {
-  if (t.visited || t.painted) return;
+  if (t.visited) {
+    colorTile(t, 'blue');
+    setTimeout(() => colorTile(t, gridColor), drawDelay);
+    return;
+  }
+  
+  if (t.painted) {
+    colorTile(t, 'red');
+    setTimeout(() => colorTile(t, gridColor), drawDelay);
+    return;
+  }
 
-  // color tile and mark it as visited
-  markTile(t)
-  t.visited = true;
+  colorTile(t, 'green');
+  setTimeout(() => {
+    
+    colorTile(t, gridColor); // reset the border color
+    markTile(t); // color tile and mark it as visited
+    t.visited = true;
 
-  // repeat for adjacent tiles
-  const adjTiles = getAdjacentTiles(t);
-  for (const tile of adjTiles)
-    setTimeout(() => fill(tile), drawDelay);
+    // repeat for adjacent tiles
+    const adjTiles = getAdjacentTiles(t);
+    for (const tile of adjTiles)
+      setTimeout(() => fill(tile), drawDelay);
+
+  }, drawDelay);
 }
 
 // returns the tiles directly north, south, east, & west that are within the grid
