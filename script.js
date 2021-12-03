@@ -1,35 +1,35 @@
+const GRID_SIZE = 600,
+  TILE_SIZE = 50,
+  GRID_COLOR = 'darkgray',
+  GRID_BG_COLOR = 'lightgray',
+  HIGHLIGHT_COLOR = 'yellow',
+  MARK_COLOR = 'lightblue',
+  PAINT_COLOR = 'black',
+  DRAW_CURSOR = 'url(cursors/paint.svg) 0 24, auto',
+  FILL_CURSOR = 'url(cursors/color-fill.svg) 0 24, auto',
+  SPEED_INCREMENT = 0.25,
+  MIN_SPEED = SPEED_INCREMENT,
+  MAX_SPEED = 2,
+  INITIAL_DRAW_DELAY = 500;
+
 const canvas = document.getElementById('canvas'),
   speedDisplay = document.getElementById('speed'),
   decSpeedBtn = document.getElementById('decreaseSpeed'),
   incSpeedBtn = document.getElementById('increaseSpeed'),
   ctx = canvas.getContext('2d'),
-  gridSize = 600,
-  tileSize = 50,
-  gridColor = 'darkgrey',
-  gridBgColor = 'lightgray',
-  highlightColor = 'yellow',
-  markColor = 'lightblue',
-  paintColor = 'black',
-  drawCursor = 'url(cursors/paint.svg) 0 24, auto',
-  fillCursor = 'url(cursors/color-fill.svg) 0 24, auto',
-  speedIncrement = 0.25,
-  minSpeed = speedIncrement,
-  maxSpeed = 2,
-  initialDrawDelay = 500,
-  drawDelayIncrement = initialDrawDelay * speedIncrement;
+  grid = [];
 
-canvas.width = gridSize;
-canvas.height = gridSize;
+canvas.width = GRID_SIZE;
+canvas.height = GRID_SIZE;
 ctx.lineWidth = 2; // workaround for pixel color blending issue
 
-const grid = [];
-let activeTile, currentTile, activeTool = 'draw', isDrawing = false, drawDelay = initialDrawDelay, speed = 1;
+let activeTile, currentTile, activeTool = 'draw', isDrawing = false, drawDelay = INITIAL_DRAW_DELAY, speed = 1;
 
 function initializeGrid() {
-  for (let y = 0; y < gridSize; y += tileSize) {
+  for (let y = 0; y < GRID_SIZE; y += TILE_SIZE) {
     let row = [];
 
-    for (let x = 0; x < gridSize; x += tileSize)      
+    for (let x = 0; x < GRID_SIZE; x += TILE_SIZE)      
       row.push({x, y, visited: false, painted: false});
     
     grid.push(row);
@@ -37,25 +37,25 @@ function initializeGrid() {
 }
 
 function drawGrid() {
-  ctx.strokeStyle = gridColor;
+  ctx.strokeStyle = GRID_COLOR;
   ctx.beginPath();
 
   // draw columns
-  for (let x = tileSize; x < gridSize; x += tileSize) {
+  for (let x = TILE_SIZE; x < GRID_SIZE; x += TILE_SIZE) {
     ctx.moveTo(x, 0);
-    ctx.lineTo(x, gridSize)
+    ctx.lineTo(x, GRID_SIZE)
   }
 
   // draw rows
-  for (let y = tileSize; y < gridSize; y += tileSize) {
+  for (let y = TILE_SIZE; y < GRID_SIZE; y += TILE_SIZE) {
     ctx.moveTo(0, y);
-    ctx.lineTo(gridSize, y)
+    ctx.lineTo(GRID_SIZE, y)
   }
 
   ctx.stroke();
 
   // draw borders
-  ctx.strokeRect(0, 0, gridSize, gridSize);
+  ctx.strokeRect(0, 0, GRID_SIZE, GRID_SIZE);
 }
 
 function getTile(x, y) {
@@ -63,15 +63,15 @@ function getTile(x, y) {
   // be off the grid, so just adjust it accordingly
   if (x < 0)
     x = 0;
-  else if (x >= gridSize)
-    x = gridSize-1;
+  else if (x >= GRID_SIZE)
+    x = GRID_SIZE-1;
   if (y < 0)
     y = 0;
-  else if (y >= gridSize)
-    y = gridSize-1;
+  else if (y >= GRID_SIZE)
+    y = GRID_SIZE-1;
 
-  x = Math.floor(x/tileSize);
-  y = Math.floor(y/tileSize);
+  x = Math.floor(x/TILE_SIZE);
+  y = Math.floor(y/TILE_SIZE);
 
   return grid[y][x];
 }
@@ -89,48 +89,48 @@ function setActiveTile(t) {
 }
 
 function highlightTile(t) {
-  colorTile(t, highlightColor);
+  colorTile(t, HIGHLIGHT_COLOR);
 }
 
 function unhighlightTile(t) {
-  colorTile(t, gridColor);
+  colorTile(t, GRID_COLOR);
 }
 
 function markTile(t) {
-  paintTile(t, markColor);
+  paintTile(t, MARK_COLOR);
 }
 
 function paintTile(t, color) {
   if (t.painted) return; // check if it's already been painted
   
-  ctx.fillStyle = color ? color : paintColor;
-  ctx.fillRect(t.x, t.y, tileSize, tileSize);
+  ctx.fillStyle = color ? color : PAINT_COLOR;
+  ctx.fillRect(t.x, t.y, TILE_SIZE, TILE_SIZE);
   t.painted = true;
 }
 
 function colorTile(t, color) {
   ctx.strokeStyle = color;
   ctx.beginPath();
-  ctx.strokeRect(t.x, t.y, tileSize, tileSize);
+  ctx.strokeRect(t.x, t.y, TILE_SIZE, TILE_SIZE);
 }
 
 function floodFill(t) {
   if (t.visited) {
     colorTile(t, 'blue');
-    setTimeout(() => colorTile(t, gridColor), drawDelay);
+    setTimeout(() => colorTile(t, GRID_COLOR), drawDelay);
     return;
   }
   
   if (t.painted) {
     colorTile(t, 'red');
-    setTimeout(() => colorTile(t, gridColor), drawDelay);
+    setTimeout(() => colorTile(t, GRID_COLOR), drawDelay);
     return;
   }
 
   colorTile(t, 'green');
   setTimeout(() => {
     
-    colorTile(t, gridColor); // reset the border color
+    colorTile(t, GRID_COLOR); // reset the border color
     markTile(t); // color tile and mark it as visited
     t.visited = true;
 
@@ -144,17 +144,17 @@ function floodFill(t) {
 
 // returns the tiles directly north, south, east, & west that are within the grid
 function getAdjacentTiles(t) {
-  const lowerBound = 0, upperBound = gridSize - tileSize;
+  const lowerBound = 0, upperBound = GRID_SIZE - TILE_SIZE;
   let adj = [];
 
   if (t.y > lowerBound) // north tile
-    adj.push( getTile(t.x, t.y - tileSize) );
+    adj.push( getTile(t.x, t.y - TILE_SIZE) );
   if (t.y < upperBound)  // south tile
-    adj.push( getTile(t.x, t.y + tileSize) );
+    adj.push( getTile(t.x, t.y + TILE_SIZE) );
   if (t.x < upperBound) // east tile
-    adj.push( getTile(t.x + tileSize, t.y) );
+    adj.push( getTile(t.x + TILE_SIZE, t.y) );
   if (t.x > lowerBound) // west tile
-    adj.push( getTile(t.x - tileSize, t.y) );
+    adj.push( getTile(t.x - TILE_SIZE, t.y) );
   
   return adj;
 }
@@ -166,14 +166,14 @@ function setActiveTool(tool) {
 
 function updateCursor() {
   if (activeTool === 'draw')
-    canvas.style.cursor = drawCursor;
+    canvas.style.cursor = DRAW_CURSOR;
   else if (activeTool === 'fill')
-    canvas.style.cursor = fillCursor;
+    canvas.style.cursor = FILL_CURSOR;
 }
 
 function reset() {
-  ctx.fillStyle = gridBgColor;
-  ctx.fillRect(0, 0, gridSize, gridSize);
+  ctx.fillStyle = GRID_BG_COLOR;
+  ctx.fillRect(0, 0, GRID_SIZE, GRID_SIZE);
   drawGrid();
 
   for (const row of grid)
@@ -186,13 +186,13 @@ function reset() {
 // increases anim speed if increase is true, otherwise decreases speed
 function changeSpeed(increase) {
 
-  if ((increase && speed == maxSpeed) ||
-     (!increase && speed == minSpeed))
+  if ((increase && speed == MAX_SPEED) ||
+     (!increase && speed == MIN_SPEED))
     return;
 
-  speed += increase ? speedIncrement : -speedIncrement;
+  speed += increase ? SPEED_INCREMENT : -SPEED_INCREMENT;
 
-  drawDelay = Math.floor(initialDrawDelay / speed);
+  drawDelay = Math.floor(INITIAL_DRAW_DELAY / speed);
   speedDisplay.innerText = speed;
 
   updateSpeedControls();
@@ -201,10 +201,10 @@ function changeSpeed(increase) {
 // determines which speed controls should be enabled/disabled
 function updateSpeedControls() {
   switch (speed) {
-    case minSpeed:
+    case MIN_SPEED:
       enableSpeedControls(false, true);
       break;
-    case maxSpeed:
+    case MAX_SPEED:
       enableSpeedControls(true, false);
       break;
     default:
