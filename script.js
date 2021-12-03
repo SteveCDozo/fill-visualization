@@ -107,7 +107,7 @@ function colorTile(t, color) {
   ctx.strokeRect(t.x, t.y, tileSize, tileSize);
 }
 
-function fill(t) {
+function floodFill(t) {
   if (t.visited) {
     colorTile(t, 'blue');
     setTimeout(() => colorTile(t, gridColor), drawDelay);
@@ -130,7 +130,7 @@ function fill(t) {
     // repeat for adjacent tiles
     const adjTiles = getAdjacentTiles(t);
     for (const tile of adjTiles)
-      setTimeout(() => fill(tile), drawDelay);
+      setTimeout(() => floodFill(tile), drawDelay);
 
   }, drawDelay);
 }
@@ -193,7 +193,7 @@ canvas.addEventListener('mousedown', () => {
     paintTile(activeTile);
   }
   else if (activeTool === 'fill')
-    fill(currentTile)
+    floodFill(currentTile)
 });
 
 canvas.addEventListener('mouseup', () => {
