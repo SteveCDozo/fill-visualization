@@ -6,8 +6,8 @@ const GRID_SIZE = 600,
   VISITED_HIGHLIGHT_COLOR = 'blue',
   PAINTED_HIGHLIGHT_COLOR = 'red',
   VALID_HIGHLIGHT_COLOR = 'green',
-  MARK_COLOR = 'lightblue',
-  PAINT_COLOR = 'black',
+  FILL_COLOR = 'lightblue',
+  DRAW_COLOR = 'black',
   DRAW_CURSOR = 'url(cursors/paint.svg) 0 24, auto',
   FILL_CURSOR = 'url(cursors/color-fill.svg) 0 24, auto',
   SPEED_INCREMENT = 0.25,
@@ -98,14 +98,10 @@ function unhighlightTile(t) {
   highlightTile(t, GRID_COLOR);
 }
 
-function markTile(t) {
-  paintTile(t, MARK_COLOR);
-}
-
 function paintTile(t, color) {
   if (t.painted) return; // skip if it's already been painted
   
-  ctx.fillStyle = color ? color : PAINT_COLOR;
+  ctx.fillStyle = color;
   ctx.fillRect(t.x, t.y, TILE_SIZE, TILE_SIZE);
   t.painted = true;
 }
@@ -122,7 +118,7 @@ function floodFill(t) {
   setTimeout(() => {
     
     unhighlightTile(t);
-    markTile(t); // color tile and mark it as visited
+    paintTile(t, FILL_COLOR); // paint tile and mark it as visited
     t.visited = true;
 
     // repeat for adjacent tiles
@@ -223,14 +219,14 @@ canvas.addEventListener('mousemove', e => {
   // if the current tile is not the active tile, then update the active tile to be the current one
   if (!isActiveTile(currentTile)) {
     setActiveTile(currentTile);
-    if (isDrawing) paintTile(currentTile); // paint the tile if drawing
+    if (isDrawing) paintTile(currentTile, DRAW_COLOR); // paint the tile if drawing
   }
 });
 
 canvas.addEventListener('mousedown', () => {
   if (activeTool === 'draw') {
     isDrawing = true;
-    paintTile(activeTile);
+    paintTile(activeTile, DRAW_COLOR);
   }
   else if (activeTool === 'fill')
     floodFill(currentTile)
