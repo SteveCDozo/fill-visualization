@@ -61,16 +61,10 @@ function drawGrid() {
 }
 
 function getTile(x, y) {
-  // there's a possibility the x or y offset coordinate may 
-  // be off the grid, so just adjust it accordingly
-  if (x < 0)
-    x = 0;
-  else if (x >= GRID_SIZE)
-    x = GRID_SIZE-1;
-  if (y < 0)
-    y = 0;
-  else if (y >= GRID_SIZE)
-    y = GRID_SIZE-1;
+  /* there's a possibility the x or y offset coordinate may 
+     be off the grid, so ensure they are within the grid */
+  if (x < 0 || y < 0 || x >= GRID_SIZE || y >= GRID_SIZE)
+    return undefined;
 
   x = Math.floor(x/TILE_SIZE);
   y = Math.floor(y/TILE_SIZE);
@@ -230,8 +224,9 @@ function enableSpeedControls(decEnabled, incEnabled) {
 
 canvas.addEventListener('mousemove', e => {
   // event.offsetX & event.offsetY give the (x,y) offset from the edge of the canvas
-  currentTile = getTile(e.offsetX, e.offsetY);
-
+  if ((currentTile = getTile(e.offsetX, e.offsetY)) === undefined)
+    return;
+  
   // if the current tile is not the active tile, then update the active tile to be the current one
   if (!isActiveTile(currentTile)) {
     setActiveTile(currentTile);
