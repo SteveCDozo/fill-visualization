@@ -2,7 +2,10 @@ const GRID_SIZE = 600,
   TILE_SIZE = 50,
   GRID_COLOR = 'darkgray',
   GRID_BG_COLOR = 'lightgray',
-  HIGHLIGHT_COLOR = 'yellow',
+  ACTIVE_HIGHLIGHT_COLOR = 'yellow',
+  VISITED_HIGHLIGHT_COLOR = 'blue',
+  PAINTED_HIGHLIGHT_COLOR = 'red',
+  VALID_HIGHLIGHT_COLOR = 'green',
   MARK_COLOR = 'lightblue',
   PAINT_COLOR = 'black',
   DRAW_CURSOR = 'url(cursors/paint.svg) 0 24, auto',
@@ -79,16 +82,20 @@ function isActiveTile(t) {
 // removes highlight from previously active tile, updates the active tile & highlights it
 function setActiveTile(t) {
   if (activeTile) unhighlightTile(activeTile);
-  highlightTile(t);    
+  highlightTile(t, ACTIVE_HIGHLIGHT_COLOR);    
   activeTile = t;
 }
 
-function highlightTile(t) {
-  colorTile(t, HIGHLIGHT_COLOR);
+// paints the tile border with the specified color
+function highlightTile(t, color) {
+  ctx.strokeStyle = color;
+  ctx.beginPath();
+  ctx.strokeRect(t.x, t.y, TILE_SIZE, TILE_SIZE);
 }
 
+// resets the tile border to the initial color
 function unhighlightTile(t) {
-  colorTile(t, GRID_COLOR);
+  highlightTile(t, GRID_COLOR);
 }
 
 function markTile(t) {
@@ -103,32 +110,18 @@ function paintTile(t, color) {
   t.painted = true;
 }
 
-function colorTile(t, color) {
-  ctx.strokeStyle = color;
-  ctx.beginPath();
-  ctx.strokeRect(t.x, t.y, TILE_SIZE, TILE_SIZE);
-}
-
 function floodFill(t) {
-  // display blue border if tile was already visited
-  if (t.visited) {
-    colorTile(t, 'blue');
-    setTimeout(() => colorTile(t, GRID_COLOR), drawDelay);
+  // check if tile was already visited or painted, highlight it accordingly
+  if (t.visited || t.painted) {
+    highlightTile(t, t.visited ? VISITED_HIGHLIGHT_COLOR : PAINTED_HIGHLIGHT_COLOR);
+    setTimeout(() => unhighlightTile(t), drawDelay);
     return;
   }
 
-  // display red border if tile was already painted
-  if (t.painted) {
-    colorTile(t, 'red');
-    setTimeout(() => colorTile(t, GRID_COLOR), drawDelay);
-    return;
-  }
-
-  // display green border and continue flood fill
-  colorTile(t, 'green');
+  highlightTile(t, VALID_HIGHLIGHT_COLOR);
   setTimeout(() => {
     
-    colorTile(t, GRID_COLOR); // reset the border color
+    unhighlightTile(t);
     markTile(t); // color tile and mark it as visited
     t.visited = true;
 
