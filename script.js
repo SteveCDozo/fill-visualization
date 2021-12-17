@@ -23,8 +23,10 @@ canvas.width = GRID_SIZE;
 canvas.height = GRID_SIZE;
 ctx.lineWidth = 2; // workaround for pixel color blending issue
 
-let activeTile, currentTile, activeTool = 'draw', isDrawing = false, drawDelay = INITIAL_DRAW_DELAY, speed = 1;
+let activeTile, currentTile, activeTool = 'draw', isDrawing = false,
+  drawDelay = INITIAL_DRAW_DELAY, speed = 1;
 
+// initializes the 2d array that holds the grid tiles
 function initializeGrid() {
   for (let y = 0; y < GRID_SIZE; y += TILE_SIZE) {
     let row = [];
@@ -77,11 +79,10 @@ function getTile(x, y) {
 }
 
 function isActiveTile(t) {
-  if (t == undefined) console.log('undefined');
   return activeTile && t.x == activeTile.x && t.y == activeTile.y;
 }
 
-// updates the active tile & highlights it, removes highlight from previously active tile
+// removes highlight from previously active tile, updates the active tile & highlights it
 function setActiveTile(t) {
   if (activeTile) unhighlightTile(activeTile);
   highlightTile(t);    
@@ -101,7 +102,7 @@ function markTile(t) {
 }
 
 function paintTile(t, color) {
-  if (t.painted) return; // check if it's already been painted
+  if (t.painted) return; // skip if it's already been painted
   
   ctx.fillStyle = color ? color : PAINT_COLOR;
   ctx.fillRect(t.x, t.y, TILE_SIZE, TILE_SIZE);
@@ -115,18 +116,21 @@ function colorTile(t, color) {
 }
 
 function floodFill(t) {
+  // display blue border if tile was already visited
   if (t.visited) {
     colorTile(t, 'blue');
     setTimeout(() => colorTile(t, GRID_COLOR), drawDelay);
     return;
   }
-  
+
+  // display red border if tile was already painted
   if (t.painted) {
     colorTile(t, 'red');
     setTimeout(() => colorTile(t, GRID_COLOR), drawDelay);
     return;
   }
 
+  // display green border and continue flood fill
   colorTile(t, 'green');
   setTimeout(() => {
     
