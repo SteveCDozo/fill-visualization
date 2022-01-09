@@ -36,7 +36,7 @@ function initializeGrid() {
     let row = [];
 
     for (let x = 0; x < GRID_SIZE; x += TILE_SIZE)      
-      row.push({x, y, visited: false, painted: false});
+      row.push({x, y, visited: false, painted: false, willCheck: false});
     
     grid.push(row);
   }
@@ -122,6 +122,8 @@ function floodFill(initialTile) {
       t = currFillQueueElem.tile,
       step = currFillQueueElem.step,
       nextDrawQueueElem = { tile: t, step, highlightDrawn: false }; // next elem to be added to queue
+    
+    if (t.willCheck) t.willCheck = false; // reset willCheck since it is being checked now
 
     // check if tile was already visited, painted, or valid; set its highlight accordingly
     if (t.visited)
@@ -141,27 +143,12 @@ function floodFill(initialTile) {
     const adjTiles = getAdjacentTiles(t);
 
     for (const tile of adjTiles) {
-      // only add tiles that haven't already been added to the next step
-      if (!fillQueueContains(tile, step+1))
-        fillQueue.push({tile, step: step+1});
-    }
-  }
-
-  // helper function - checks if fill queue already contains the tile at the specified step
-  function fillQueueContains(tile, step) {
+      // only add tiles that aren't already going to be checked
+      if (tile.willCheck) continue;
       
-    for (const q of fillQueue) {
-      if (q.step < step)
-        continue; // skip over queued items for lower steps
-
-      if (q.step > step)
-        return false; // stop once a higher step is reached
-
-      if (isSameTile(q.tile, tile))
-        return true;
+      tile.willCheck = true;
+      fillQueue.push({tile, step: step+1});
     }
-
-    return false;
   }
 }
 
