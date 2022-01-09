@@ -20,14 +20,15 @@ const canvas = document.getElementById('canvas'),
   decSpeedBtn = document.getElementById('decreaseSpeed'),
   incSpeedBtn = document.getElementById('increaseSpeed'),
   ctx = canvas.getContext('2d'),
-  grid = [];
+  grid = [],
+  drawQueue = [];
 
 canvas.width = GRID_SIZE;
 canvas.height = GRID_SIZE;
 ctx.lineWidth = 2; // workaround for pixel color blending issue
 
 let activeTile, currentTile, activeTool = 'draw', isDrawing = false,
-  drawDelay = INITIAL_DRAW_DELAY, speed = 1;
+  drawDelay = INITIAL_DRAW_DELAY, speed = 1, drawInterval;
 
 // initializes the 2d array that holds the grid tiles
 function initializeGrid() {
@@ -76,7 +77,11 @@ function getTile(x, y) {
 }
 
 function isActiveTile(t) {
-  return activeTile && t.x == activeTile.x && t.y == activeTile.y;
+  return activeTile && isSameTile(activeTile, t);
+}
+
+function isSameTile(t1, t2) {
+  return t1.x == t2.x && t1.y == t2.y;
 }
 
 // removes highlight from previously active tile, updates the active tile & highlights it
@@ -106,27 +111,58 @@ function paintTile(t, color) {
   t.painted = true;
 }
 
-function floodFill(t) {
-  // check if tile was already visited or painted, highlight it accordingly
-  if (t.visited || t.painted) {
-    highlightTile(t, t.visited ? VISITED_HIGHLIGHT_COLOR : PAINTED_HIGHLIGHT_COLOR);
-    setTimeout(() => unhighlightTile(t), drawDelay);
-    return;
+function floodFill(initialTile) {
+
+  const fillQueue = []; // BFS queue for flood fill
+  fillQueue.push({tile: initialTile, step: 0}); // add first tile to the queue
+
+  while (fillQueue.length) { // check nodes in queue until empty
+
+    const currFillQueueElem = fillQueue.shift(), // current elem being checked
+      t = currFillQueueElem.tile,
+      step = currFillQueueElem.step,
+      nextDrawQueueElem = { tile: t, step, highlightDrawn: false }; // next elem to be added to queue
+
+    // check if tile was already visited, painted, or valid; set its highlight accordingly
+    if (t.visited)
+      nextDrawQueueElem['highlightColor'] = VISITED_HIGHLIGHT_COLOR;
+    else if (t.painted)
+      nextDrawQueueElem['highlightColor'] = PAINTED_HIGHLIGHT_COLOR;
+    else
+      nextDrawQueueElem['highlightColor'] = VALID_HIGHLIGHT_COLOR;
+    
+    drawQueue.push(nextDrawQueueElem); // add elem to draw queue
+    
+    if (t.visited || t.painted) continue; // move on if tile was already visited or painted
+
+    t.visited = true; // mark valid tile as visited
+
+    // add adjacent tiles to queue with an incremented step
+    const adjTiles = getAdjacentTiles(t);
+
+    for (const tile of adjTiles) {
+      // only add tiles that haven't already been added to the next step
+      if (!fillQueueContains(tile, step+1))
+        fillQueue.push({tile, step: step+1});
+    }
   }
 
-  highlightTile(t, VALID_HIGHLIGHT_COLOR);
-  setTimeout(() => {
-    
-    unhighlightTile(t);
-    paintTile(t, FILL_COLOR); // paint tile and mark it as visited
-    t.visited = true;
+  // helper function - checks if fill queue already contains the tile at the specified step
+  function fillQueueContains(tile, step) {
+      
+    for (const q of fillQueue) {
+      if (q.step < step)
+        continue; // skip over queued items for lower steps
 
-    // repeat for adjacent tiles
-    const adjTiles = getAdjacentTiles(t);
-    for (const tile of adjTiles)
-      setTimeout(() => floodFill(tile), drawDelay);
+      if (q.step > step)
+        return false; // stop once a higher step is reached
 
-  }, drawDelay);
+      if (isSameTile(q.tile, tile))
+        return true;
+    }
+
+    return false;
+  }
 }
 
 // returns the tiles directly north, south, east, & west that are within the grid
@@ -211,6 +247,43 @@ function enableSpeedControls(decEnabled, incEnabled) {
     incSpeedBtn.disabled = !incSpeedBtn.disabled;
 }
 
+function draw() {
+
+  if (drawQueue.length == 0) { // stop drawing when queue is empty
+    clearInterval(drawInterval);    
+    return;
+  }
+
+  const currStep = drawQueue[0].step; // current step of the queue
+
+  // check if the highlights have been drawn for the current step
+  if (drawQueue[0].highlightDrawn == false) {
+
+    // highlight all tiles of current step
+    for (const elem of drawQueue) {
+
+      if (elem.step != currStep) return; // go through all elems until next step is reached
+
+      highlightTile(elem.tile, elem.highlightColor);      
+      elem.highlightDrawn = true;
+    }
+    
+  } else {
+
+    // highlights drawn already; unhighlight and paint appropriate tiles
+    while (drawQueue.length) {
+
+      if (drawQueue[0].step != currStep) return;
+      
+      const elem = drawQueue.shift();
+      unhighlightTile(elem.tile);
+
+      if (elem.highlightColor === VALID_HIGHLIGHT_COLOR)
+        paintTile(elem.tile, FILL_COLOR);
+    }
+  } 
+}
+
 canvas.addEventListener('mousemove', e => {
   // event.offsetX & event.offsetY give the (x,y) offset from the edge of the canvas
   if ((currentTile = getTile(e.offsetX, e.offsetY)) === undefined)
@@ -228,8 +301,10 @@ canvas.addEventListener('mousedown', () => {
     isDrawing = true;
     paintTile(activeTile, DRAW_COLOR);
   }
-  else if (activeTool === 'fill')
-    floodFill(currentTile)
+  else if (activeTool === 'fill') {
+    floodFill(currentTile);
+    drawInterval = setInterval(draw, drawDelay);
+  }
 });
 
 canvas.addEventListener('mouseup', () => {
