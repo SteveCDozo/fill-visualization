@@ -195,6 +195,11 @@ function updateCursor() {
 }
 
 function reset() {
+  if (drawInterval)
+    clearInterval(drawInterval); // stop drawing
+  
+  drawQueue.length = 0; // clear the draw queue
+
   ctx.fillStyle = GRID_BG_COLOR;
   ctx.fillRect(0, 0, GRID_SIZE, GRID_SIZE);
   drawGrid();
