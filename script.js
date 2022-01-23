@@ -27,7 +27,7 @@ canvas.width = GRID_SIZE;
 canvas.height = GRID_SIZE;
 ctx.lineWidth = 2; // workaround for pixel color blending issue
 
-let activeTile, currentTile, activeTool = 'draw', isDrawing = false,
+let activeTile, activeTool = 'draw', isDrawing = false,
   drawDelay = INITIAL_DRAW_DELAY, speed = 1, drawInterval;
 
 // initializes the 2d array that holds the grid tiles
@@ -89,6 +89,20 @@ function setActiveTile(t) {
   if (activeTile) unhighlightTile(activeTile);
   highlightTile(t, ACTIVE_HIGHLIGHT_COLOR);    
   activeTile = t;
+}
+
+/* updates the active tile if the pointer event occured on a different tile
+   returns true if the active tile was updated and false otherwise */
+function updateActiveTile(e) {
+  // event.offsetX & event.offsetY give the (x,y) offset from the edge of the canvas
+  const currentTile = getTile(e.offsetX, e.offsetY);
+
+  // stop if tile is undefined or it's already the active tile
+  if (!currentTile || isActiveTile(currentTile)) return false; 
+
+  // then update the active tile to be the current one
+  setActiveTile(currentTile);
+  return true;
 }
 
 // paints the tile border with the specified color
@@ -276,30 +290,27 @@ function draw() {
   } 
 }
 
-canvas.addEventListener('mousemove', e => {
-  // event.offsetX & event.offsetY give the (x,y) offset from the edge of the canvas
-  if ((currentTile = getTile(e.offsetX, e.offsetY)) === undefined)
-    return;
-  
-  // if the current tile is not the active tile, then update the active tile to be the current one
-  if (!isActiveTile(currentTile)) {
-    setActiveTile(currentTile);
-    if (isDrawing) paintTile(currentTile, DRAW_COLOR); // paint the tile if drawing
-  }
+canvas.addEventListener('pointermove', e => {
+  if (!updateActiveTile(e)) return; // if active tile wasn't updated, don't continue
+  if (isDrawing) paintTile(activeTile, DRAW_COLOR); // paint the tile if drawing
 });
 
-canvas.addEventListener('mousedown', () => {
+canvas.addEventListener('pointerdown', e => {
+  /* need to set the activeTile here if using touch since the pointermove event
+     listener won't be triggered beforehand */
+  if (e.pointerType === 'touch')
+    updateActiveTile(e);
+
   if (activeTool === 'draw') {
     isDrawing = true;
     paintTile(activeTile, DRAW_COLOR);
-  }
-  else if (activeTool === 'fill') {
-    floodFill(currentTile);
+  } else if (activeTool === 'fill') {
+    floodFill(activeTile);
     drawInterval = setInterval(draw, drawDelay);
   }
 });
 
-canvas.addEventListener('mouseup', () => {
+canvas.addEventListener('pointerup', () => {
   if (isDrawing) isDrawing = false;
 });
 

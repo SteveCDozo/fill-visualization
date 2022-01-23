@@ -5,6 +5,9 @@ body {
 
 canvas {
   background-color: lightgray;
+  /* prevent browser from claiming pointermove event for native
+     behavior (zooming & panning) after a few seconds */
+  touch-action: none;
 }
 
 #controls {
