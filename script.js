@@ -323,10 +323,14 @@ canvas.addEventListener('pointerdown', e => {
   }
 });
 
-canvas.addEventListener('pointerup', () => {
+canvas.addEventListener('pointerup', pointerUpAndLeaveListener);
+canvas.addEventListener('pointerleave', pointerUpAndLeaveListener);
+
+// used to deactivate draw tool when pointer is no longer active or leaves the canvas
+function pointerUpAndLeaveListener() {
   if (drawInterval) return;
   if (isDrawing) isDrawing = false;
-});
+}
 
 initializeGrid();
 drawGrid();
