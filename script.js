@@ -10,6 +10,7 @@ const GRID_SIZE = 600,
   DRAW_COLOR = 'black',
   DRAW_CURSOR = 'url(cursors/paint.svg) 0 24, auto',
   FILL_CURSOR = 'url(cursors/color-fill.svg) 0 24, auto',
+  WAIT_CURSOR = 'wait',
   SPEED_INCREMENT = 0.25,
   MIN_SPEED = SPEED_INCREMENT,
   MAX_SPEED = 2,
@@ -189,7 +190,9 @@ function setActiveTool(tool) {
 }
 
 function updateCursor() {
-  if (activeTool === 'draw')
+  if (drawInterval)
+    canvas.style.cursor = WAIT_CURSOR;
+  else if (activeTool === 'draw')
     canvas.style.cursor = DRAW_CURSOR;
   else if (activeTool === 'fill')
     canvas.style.cursor = FILL_CURSOR;
@@ -215,6 +218,7 @@ function resetInterval() {
   if (!drawInterval) return;
   clearInterval(drawInterval);
   drawInterval = undefined;
+  updateCursor();
 }
 
 // increases anim speed if increase is true, otherwise decreases speed
@@ -296,11 +300,13 @@ function draw() {
 }
 
 canvas.addEventListener('pointermove', e => {
+  if (drawInterval) return; // don't handle pointer if an interval is currently active
   if (!updateActiveTile(e)) return; // if active tile wasn't updated, don't continue
   if (isDrawing) paintTile(activeTile, DRAW_COLOR); // paint the tile if drawing
 });
 
 canvas.addEventListener('pointerdown', e => {
+  if (drawInterval) return;
   /* need to set the activeTile here if using touch since the pointermove event
      listener won't be triggered beforehand */
   if (e.pointerType === 'touch')
@@ -313,10 +319,12 @@ canvas.addEventListener('pointerdown', e => {
     if (drawInterval) return; // prevent a new floodfill & interval if one is already active
     floodFill(activeTile);
     drawInterval = setInterval(draw, drawDelay);
+    updateCursor();
   }
 });
 
 canvas.addEventListener('pointerup', () => {
+  if (drawInterval) return;
   if (isDrawing) isDrawing = false;
 });
 
