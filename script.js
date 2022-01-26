@@ -196,8 +196,7 @@ function updateCursor() {
 }
 
 function reset() {
-  if (drawInterval)
-    clearInterval(drawInterval); // stop drawing
+  resetInterval(); // stop drawing
   
   drawQueue.length = 0; // clear the draw queue
 
@@ -210,6 +209,12 @@ function reset() {
       tile.visited = false;
       tile.painted = false;
     }
+}
+
+function resetInterval() {
+  if (!drawInterval) return;
+  clearInterval(drawInterval);
+  drawInterval = undefined;
 }
 
 // increases anim speed if increase is true, otherwise decreases speed
@@ -256,7 +261,7 @@ function enableSpeedControls(decEnabled, incEnabled) {
 function draw() {
 
   if (drawQueue.length == 0) { // stop drawing when queue is empty
-    clearInterval(drawInterval);    
+    resetInterval();
     return;
   }
 
@@ -305,6 +310,7 @@ canvas.addEventListener('pointerdown', e => {
     isDrawing = true;
     paintTile(activeTile, DRAW_COLOR);
   } else if (activeTool === 'fill') {
+    if (drawInterval) return; // prevent a new floodfill & interval if one is already active
     floodFill(activeTile);
     drawInterval = setInterval(draw, drawDelay);
   }
