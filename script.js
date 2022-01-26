@@ -1,5 +1,5 @@
-const GRID_SIZE = 600,
-  TILE_SIZE = 50,
+const TILE_SIZE = 50,
+  GRID_SIZE = calcGridSize(600, 10),
   GRID_COLOR = 'darkgray',
   GRID_BG_COLOR = 'lightgray',
   ACTIVE_HIGHLIGHT_COLOR = 'yellow',
@@ -15,6 +15,19 @@ const GRID_SIZE = 600,
   MIN_SPEED = SPEED_INCREMENT,
   MAX_SPEED = 2,
   INITIAL_DRAW_DELAY = 500;
+
+// calculate grid size based on viewport width
+function calcGridSize(preferredSize, minMargin) {
+  const clientWidth = document.documentElement.clientWidth; // viewport width (excluding scrollbar)
+  const margin = 2 * minMargin;
+
+  if (clientWidth >= preferredSize + margin)
+    return preferredSize;
+  
+  // calculate a smaller grid size evenly divisible by the tile size 
+  const availWidth = clientWidth - margin;
+  return availWidth - (availWidth % TILE_SIZE);
+}
 
 const canvas = document.getElementById('canvas'),
   speedDisplay = document.getElementById('speed'),
