@@ -8,6 +8,8 @@ const TILE_SIZE = 25,
   VALID_HIGHLIGHT_COLOR = 'green',
   FILL_COLOR = 'lightblue',
   DRAW_COLOR = 'black',
+  DRAW_TOOL = 'draw',
+  FILL_TOOL = 'fill',
   DRAW_CURSOR = 'url(images/paint.svg) 0 24, auto',
   FILL_CURSOR = 'url(images/color-fill.svg) 0 24, auto',
   WAIT_CURSOR = 'wait',
@@ -205,7 +207,7 @@ function setActiveTool(tool) {
 
   activeTool = tool;
   
-  if (activeTool === 'draw') { // update the active tool button
+  if (activeTool === DRAW_TOOL) { // update the active tool button
     drawBtn.classList.add('active');
     fillBtn.classList.remove('active');
   } else {
@@ -219,9 +221,9 @@ function setActiveTool(tool) {
 function updateCursor() {
   if (drawInterval)
     canvas.style.cursor = WAIT_CURSOR;
-  else if (activeTool === 'draw')
+  else if (activeTool === DRAW_TOOL)
     canvas.style.cursor = DRAW_CURSOR;
-  else if (activeTool === 'fill')
+  else
     canvas.style.cursor = FILL_CURSOR;
 }
 
@@ -339,10 +341,10 @@ canvas.addEventListener('pointerdown', e => {
   if (e.pointerType === 'touch')
     updateActiveTile(e);
 
-  if (activeTool === 'draw') {
+  if (activeTool === DRAW_TOOL) {
     isDrawing = true;
     paintTile(activeTile, DRAW_COLOR);
-  } else if (activeTool === 'fill') {
+  } else { // fill tool active
     if (drawInterval) return; // prevent a new floodfill & interval if one is already active
     floodFill(activeTile);
     drawInterval = setInterval(draw, drawDelay);
@@ -361,5 +363,5 @@ function pointerUpAndLeaveListener() {
 
 initializeGrid();
 drawGrid();
-setActiveTool('draw');
+setActiveTool(DRAW_TOOL);
 updateCursor();

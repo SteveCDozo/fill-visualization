@@ -11,8 +11,8 @@
     
     <div id="controls">
       <div id="tools">
-        <button id="draw" title="Draw" onclick="setActiveTool('draw')"></button>
-        <button id="fill" title="Fill" onclick="setActiveTool('fill')"></button>
+        <button id="draw" title="Draw" onclick="setActiveTool(DRAW_TOOL)"></button>
+        <button id="fill" title="Fill" onclick="setActiveTool(FILL_TOOL)"></button>
         <button id="reset" title="Reset" onclick="reset()"></button>
       </div>
       <div id="speedControls">
@@ -24,7 +24,7 @@
     </div>
 
     <canvas id="canvas"></canvas>
-    
+
     <script src="script.js"></script>
   </body>
 </html>
