@@ -1,6 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
 body {
   text-align: center;
   background-color: gray;
+  font-family: 'Open Sans', sans-serif;
 }
 
 canvas {
