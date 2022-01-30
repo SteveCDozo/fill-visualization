@@ -9,22 +9,22 @@
   <body>
     <h1>Flood Fill Visualization</h1>
     
-    <canvas id="canvas"></canvas>
-
     <div id="controls">
-      <div>
-        <button id="draw" onclick="setActiveTool('draw')">Draw</button>
-        <button id="fill" onclick="setActiveTool('fill')">Fill</button>
-        <button id="reset" onclick="reset()">Reset</button>
+      <div id="tools">
+        <button id="draw" title="Draw" onclick="setActiveTool('draw')"></button>
+        <button id="fill" title="Fill" onclick="setActiveTool('fill')"></button>
+        <button id="reset" title="Reset" onclick="reset()"></button>
       </div>
-      <div>
+      <div id="speedControls">
         Speed:
-        <button id="decreaseSpeed" onclick="changeSpeed(false)">-</button>
-        <span id="speed">1</span>x
-        <button id="increaseSpeed" onclick="changeSpeed(true)">+</button>
+        <button id="decreaseSpeed" title="Decrease speed" onclick="changeSpeed(false)"></button>
+        <span id="speed">1.00x</span>
+        <button id="increaseSpeed" title="Increase speed" onclick="changeSpeed(true)"></button>
       </div>
     </div>
 
+    <canvas id="canvas"></canvas>
+    
     <script src="script.js"></script>
   </body>
 </html>

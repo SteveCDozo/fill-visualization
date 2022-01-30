@@ -11,14 +11,63 @@ canvas {
 }
 
 #controls {
-  margin-top: 40px;
-}
-
-#controls > div {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
   margin-bottom: 20px;
 }
 
+#controls button {
+  cursor: pointer;
+  background-color: white;
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 30px;
+  height: 30px;
+  border: none;
+}
+
+#controls button:hover {
+  background-color: lightblue;
+}
+
+#draw {
+  background-image: url('images/paint.svg');
+}
+
+#fill {
+  background-image: url('images/color-fill.svg');
+}
+
+#reset {
+  background-image: url('images/trash.svg');
+}
+
+#tools > .active {
+  background-color: lightskyblue;
+}
+
+#speedControls {
+  font-size: 20px;
+  align-items: center;
+  display: flex;
+}
+
+#speedControls button:disabled {
+  opacity: 0.3;
+  cursor: default;
+  background-color:white;
+}
+
+#decreaseSpeed {
+  background-image: url('images/minus.svg');
+  margin-left: 10px;
+}
+
+#increaseSpeed {
+  background-image: url('images/plus.svg');
+}
+
 #speed {
-  display: inline-block;
-  width: 2em;
+  width: 3em;
 }

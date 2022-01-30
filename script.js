@@ -1,4 +1,4 @@
-const TILE_SIZE = 50,
+const TILE_SIZE = 25,
   GRID_SIZE = calcGridSize(600, 10),
   GRID_COLOR = 'darkgray',
   GRID_BG_COLOR = 'lightgray',
@@ -8,8 +8,8 @@ const TILE_SIZE = 50,
   VALID_HIGHLIGHT_COLOR = 'green',
   FILL_COLOR = 'lightblue',
   DRAW_COLOR = 'black',
-  DRAW_CURSOR = 'url(cursors/paint.svg) 0 24, auto',
-  FILL_CURSOR = 'url(cursors/color-fill.svg) 0 24, auto',
+  DRAW_CURSOR = 'url(images/paint.svg) 0 24, auto',
+  FILL_CURSOR = 'url(images/color-fill.svg) 0 24, auto',
   WAIT_CURSOR = 'wait',
   SPEED_INCREMENT = 0.25,
   MIN_SPEED = SPEED_INCREMENT,
@@ -30,6 +30,8 @@ function calcGridSize(preferredSize, minMargin) {
 }
 
 const canvas = document.getElementById('canvas'),
+  drawBtn = document.getElementById('draw'),
+  fillBtn = document.getElementById('fill'),
   speedDisplay = document.getElementById('speed'),
   decSpeedBtn = document.getElementById('decreaseSpeed'),
   incSpeedBtn = document.getElementById('increaseSpeed'),
@@ -41,7 +43,7 @@ canvas.width = GRID_SIZE;
 canvas.height = GRID_SIZE;
 ctx.lineWidth = 2; // workaround for pixel color blending issue
 
-let activeTile, activeTool = 'draw', isDrawing = false,
+let activeTile, activeTool, isDrawing = false,
   drawDelay = INITIAL_DRAW_DELAY, speed = 1, drawInterval;
 
 // initializes the 2d array that holds the grid tiles
@@ -198,7 +200,19 @@ function getAdjacentTiles(t) {
 }
 
 function setActiveTool(tool) {
+  // don't need to do anything if it's already the active tool
+  if (tool === activeTool) return;
+
   activeTool = tool;
+  
+  if (activeTool === 'draw') { // update the active tool button
+    drawBtn.classList.add('active');
+    fillBtn.classList.remove('active');
+  } else {
+    fillBtn.classList.add('active');
+    drawBtn.classList.remove('active');
+  }
+
   updateCursor();  
 }
 
@@ -244,7 +258,7 @@ function changeSpeed(increase) {
   speed += increase ? SPEED_INCREMENT : -SPEED_INCREMENT;
 
   drawDelay = Math.floor(INITIAL_DRAW_DELAY / speed);
-  speedDisplay.innerText = speed;
+  speedDisplay.innerText = speed + 'x';
 
   updateSpeedControls();
 }
@@ -347,4 +361,5 @@ function pointerUpAndLeaveListener() {
 
 initializeGrid();
 drawGrid();
+setActiveTool('draw');
 updateCursor();
