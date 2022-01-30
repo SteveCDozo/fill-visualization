@@ -27,8 +27,11 @@ canvas {
   border: none;
 }
 
-#controls button:hover {
-  background-color: lightblue;
+/* check if browser supports real hovering */
+@media (hover: hover) {
+  #controls button:hover {
+    background-color: lightblue;
+  }
 }
 
 #draw {
