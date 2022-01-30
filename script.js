@@ -10,9 +10,9 @@ const TILE_SIZE = 25,
   DRAW_COLOR = 'black',
   DRAW_TOOL = 'draw',
   FILL_TOOL = 'fill',
-  DRAW_CURSOR = 'url(images/paint.svg) 0 24, auto',
-  FILL_CURSOR = 'url(images/color-fill.svg) 0 24, auto',
-  WAIT_CURSOR = 'wait',
+  DRAW_CLASS = 'draw',
+  FILL_CLASS = 'fill',
+  WAIT_CLASS = 'wait',
   SPEED_INCREMENT = 0.25,
   MIN_SPEED = SPEED_INCREMENT,
   MAX_SPEED = 2,
@@ -220,11 +220,11 @@ function setActiveTool(tool) {
 
 function updateCursor() {
   if (drawInterval)
-    canvas.style.cursor = WAIT_CURSOR;
+    canvas.className = WAIT_CLASS;
   else if (activeTool === DRAW_TOOL)
-    canvas.style.cursor = DRAW_CURSOR;
+    canvas.className = DRAW_CLASS;
   else
-    canvas.style.cursor = FILL_CURSOR;
+    canvas.className = FILL_CLASS;
 }
 
 function reset() {

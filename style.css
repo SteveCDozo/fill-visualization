@@ -10,6 +10,18 @@ canvas {
   touch-action: none;
 }
 
+canvas.draw {
+  cursor: url(images/paint.svg) 0 24, auto;
+}
+
+canvas.fill {
+  cursor: url(images/color-fill.svg) 0 24, auto;
+}
+
+canvas.wait {
+  cursor: wait;
+}
+
 #controls {
   display: flex;
   justify-content: center;
