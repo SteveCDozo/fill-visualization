@@ -28,7 +28,9 @@ canvas.wait {
 #controls {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  column-gap: 20px;
+  row-gap: 15px;
+  flex-wrap: wrap;
   margin-bottom: 20px;
 }
 
