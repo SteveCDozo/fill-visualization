@@ -1,5 +1,6 @@
-const TILE_SIZE = 25,
-  GRID_SIZE = calcGridSize(600, 10),
+const PREFERRED_GRID_SIZE = 600,
+  MIN_MARGIN = 10,
+  TILE_SIZE = 25,
   GRID_COLOR = 'darkgray',
   GRID_BG_COLOR = 'lightgray',
   ACTIVE_HIGHLIGHT_COLOR = 'yellow',
@@ -18,18 +19,7 @@ const TILE_SIZE = 25,
   MAX_SPEED = 2,
   INITIAL_DRAW_DELAY = 500;
 
-// calculate grid size based on viewport width
-function calcGridSize(preferredSize, minMargin) {
-  const clientWidth = document.documentElement.clientWidth; // viewport width (excluding scrollbar)
-  const margin = 2 * minMargin;
-
-  if (clientWidth >= preferredSize + margin)
-    return preferredSize;
-  
-  // calculate a smaller grid size evenly divisible by the tile size 
-  const availWidth = clientWidth - margin;
-  return availWidth - (availWidth % TILE_SIZE);
-}
+let gridSize = calcGridSize();
 
 const canvas = document.getElementById('canvas'),
   drawBtn = document.getElementById('draw'),
@@ -41,19 +31,47 @@ const canvas = document.getElementById('canvas'),
   grid = [],
   drawQueue = [];
 
-canvas.width = GRID_SIZE;
-canvas.height = GRID_SIZE;
-ctx.lineWidth = 2; // workaround for pixel color blending issue
-
 let activeTile, activeTool, isDrawing = false,
   drawDelay = INITIAL_DRAW_DELAY, speed = 1, drawInterval;
 
+// calculate grid size based on viewport width
+function calcGridSize() {
+  const clientWidth = document.documentElement.clientWidth; // viewport width (excluding scrollbar)
+  const margin = 2 * MIN_MARGIN;
+
+  if (clientWidth >= PREFERRED_GRID_SIZE + margin)
+    return PREFERRED_GRID_SIZE;
+  
+  // calculate a smaller grid size evenly divisible by the tile size 
+  const availWidth = clientWidth - margin;
+  return availWidth - (availWidth % TILE_SIZE);
+}
+
+// resizes grid if necessary
+function resizeListener() {
+  const newSize = calcGridSize();
+  if (newSize == gridSize) return;
+  
+  gridSize = newSize;
+  resizeGrid();
+}
+
+function resizeGrid() {
+  resetDrawing();
+  canvas.width = gridSize;
+  canvas.height = gridSize;
+  // reinitialize grid since amount of tiles changed
+  grid.length = 0;
+  initializeGrid();
+  drawGrid();
+}
+
 // initializes the 2d array that holds the grid tiles
 function initializeGrid() {
-  for (let y = 0; y < GRID_SIZE; y += TILE_SIZE) {
+  for (let y = 0; y < gridSize; y += TILE_SIZE) {
     let row = [];
 
-    for (let x = 0; x < GRID_SIZE; x += TILE_SIZE)      
+    for (let x = 0; x < gridSize; x += TILE_SIZE)      
       row.push({x, y, visited: false, painted: false, willCheck: false});
     
     grid.push(row);
@@ -62,30 +80,31 @@ function initializeGrid() {
 
 function drawGrid() {
   ctx.strokeStyle = GRID_COLOR;
+  ctx.lineWidth = 2; // workaround for pixel color blending issue
   ctx.beginPath();
 
   // draw columns
-  for (let x = TILE_SIZE; x < GRID_SIZE; x += TILE_SIZE) {
+  for (let x = TILE_SIZE; x < gridSize; x += TILE_SIZE) {
     ctx.moveTo(x, 0);
-    ctx.lineTo(x, GRID_SIZE)
+    ctx.lineTo(x, gridSize)
   }
 
   // draw rows
-  for (let y = TILE_SIZE; y < GRID_SIZE; y += TILE_SIZE) {
+  for (let y = TILE_SIZE; y < gridSize; y += TILE_SIZE) {
     ctx.moveTo(0, y);
-    ctx.lineTo(GRID_SIZE, y)
+    ctx.lineTo(gridSize, y)
   }
 
   ctx.stroke();
 
   // draw borders
-  ctx.strokeRect(0, 0, GRID_SIZE, GRID_SIZE);
+  ctx.strokeRect(0, 0, gridSize, gridSize);
 }
 
 function getTile(x, y) {
   /* there's a possibility the x or y offset coordinate may 
      be off the grid, so ensure they are within the grid */
-  if (x < 0 || y < 0 || x >= GRID_SIZE || y >= GRID_SIZE)
+  if (x < 0 || y < 0 || x >= gridSize || y >= gridSize)
     return undefined;
 
   x = Math.floor(x/TILE_SIZE);
@@ -186,7 +205,7 @@ function floodFill(initialTile) {
 
 // returns the tiles directly north, south, east, & west that are within the grid
 function getAdjacentTiles(t) {
-  const lowerBound = 0, upperBound = GRID_SIZE - TILE_SIZE;
+  const lowerBound = 0, upperBound = gridSize - TILE_SIZE;
   let adj = [];
 
   if (t.y > lowerBound) // north tile
@@ -228,12 +247,11 @@ function updateCursor() {
 }
 
 function reset() {
-  resetInterval(); // stop drawing
-  
-  drawQueue.length = 0; // clear the draw queue
+
+  resetDrawing();
 
   ctx.fillStyle = GRID_BG_COLOR;
-  ctx.fillRect(0, 0, GRID_SIZE, GRID_SIZE);
+  ctx.fillRect(0, 0, gridSize, gridSize);
   drawGrid();
 
   for (const row of grid)
@@ -241,6 +259,11 @@ function reset() {
       tile.visited = false;
       tile.painted = false;
     }
+}
+
+function resetDrawing() {
+  resetInterval(); // stop drawing
+  drawQueue.length = 0; // clear the draw queue
 }
 
 function resetInterval() {
@@ -361,7 +384,7 @@ function pointerUpAndLeaveListener() {
   if (isDrawing) isDrawing = false;
 }
 
-initializeGrid();
-drawGrid();
+resizeGrid(); // set up canvas and grid
+window.onresize = resizeListener;
 setActiveTool(DRAW_TOOL);
 updateCursor();
