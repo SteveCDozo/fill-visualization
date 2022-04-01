@@ -283,8 +283,14 @@ function changeSpeed(increase) {
   speed += increase ? SPEED_INCREMENT : -SPEED_INCREMENT;
 
   drawDelay = Math.floor(INITIAL_DRAW_DELAY / speed);
-  speedDisplay.innerText = speed + 'x';
+  
+  // if currently drawing, update drawInterval with the new delay
+  if (drawInterval) {
+    clearInterval(drawInterval);
+    drawInterval = setInterval(draw, drawDelay);
+  }
 
+  speedDisplay.innerText = speed + 'x';
   updateSpeedControls();
 }
 
